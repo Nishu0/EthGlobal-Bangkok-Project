@@ -5,24 +5,32 @@ import { AnimatePresence } from "framer-motion";
 
 import AudienceSelection from "../create-bet/AudienceSelection";
 import BettingQuestion from "../create-bet/BettingQuestion";
-import MinimumBetStake from "../create-bet/MinimumBetStake";
 import AddDescription from "../create-bet/AddDescription";
 import { Icons } from "@/components/icons";
+import {
+  usePrepareContractWrite,
+  useContractWrite,
+  useWaitForTransaction,
+} from "wagmi";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 interface FormData {
   audience: string;
   description: string;
-  minStake: string;
+  minStake: number;
+  duration: number;
   hasDescription: boolean;
   descriptionText?: string;
 }
 
 const CreateBetPage: React.FC = () => {
+  const { primaryWallet } = useDynamicContext();
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({
     audience: "",
     description: "",
-    minStake: "",
+    minStake: 80000,
+    duration: 1735689600 - Date.now() / 1000,
     hasDescription: false,
   });
 
@@ -30,8 +38,32 @@ const CreateBetPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log("Submit Data:", formData);
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('/bets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: formData.description,
+          description: formData.descriptionText,
+          minStake: formData.minStake,
+          endTimestamp: new Date(formData.duration),
+          creatorAddress: primaryWallet?.address, // from wallet connection
+          txHash: // from contract interaction
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create bet');
+      }
+      
+      // Handle success (e.g., redirect to bets page)
+    } catch (error) {
+      // Handle error
+      console.error('Error creating bet:', error);
+    }
   };
 
   const goBack = () => {
@@ -56,14 +88,6 @@ const CreateBetPage: React.FC = () => {
           />
         );
       case 3:
-        return (
-          <MinimumBetStake
-            onNext={() => setStep(4)}
-            updateFormData={updateFormData}
-            minStake={formData.minStake}
-          />
-        );
-      case 4:
         return (
           <AddDescription
             handleSubmit={handleSubmit}

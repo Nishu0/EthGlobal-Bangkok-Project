@@ -27,7 +27,7 @@ const BetsPage = () => {
       time: "22:21:66",
       timeLeft: { days: 1, hours: 2, minutes: 26 },
       status: "Successful Placed",
-      paymentMethod: "PayPal",
+      paymentMethod: "Flow Chain",
     },
     {
       id: 2,
@@ -41,7 +41,7 @@ const BetsPage = () => {
       time: "22:21:66",
       timeLeft: { days: 1, hours: 2, minutes: 26 },
       status: "Successful Placed",
-      paymentMethod: "PayPal",
+      paymentMethod: "Flow Chain",
     },
   ];
 

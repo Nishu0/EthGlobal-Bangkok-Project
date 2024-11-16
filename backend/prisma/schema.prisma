@@ -1,0 +1,64 @@
+// This is your Prisma schema file
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id          String        @id @default(cuid())
+    address     String        @unique // Wallet address
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+    betsCreated Bet[]         @relation("CreatedBets")
+    betsPlaced  BetPosition[]
+}
+
+model Bet {
+    id             String        @id @default(cuid())
+    questionId     Int // Smart contract question ID
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+    endTimestamp   DateTime
+    question       String
+    description    String?
+    minStake       Float
+    totalAmount    Float         @default(0)
+    totalYesAmount Float         @default(0)
+    totalNoAmount  Float         @default(0)
+    status         BetStatus     @default(ONGOING)
+    creator        User          @relation("CreatedBets", fields: [creatorId], references: [id])
+    creatorId      String
+    positions      BetPosition[]
+    txHash         String        @unique // Transaction hash from blockchain
+    eventCompleted Boolean       @default(false)
+}
+
+model BetPosition {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    bet       Bet      @relation(fields: [betId], references: [id])
+    betId     String
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String
+    amount    Float
+    position  Position
+    txHash    String   @unique // Transaction hash from blockchain
+    claimed   Boolean  @default(false)
+}
+
+enum BetStatus {
+    ONGOING
+    COMPLETED
+    CANCELLED
+}
+
+enum Position {
+    YES
+    NO
+}

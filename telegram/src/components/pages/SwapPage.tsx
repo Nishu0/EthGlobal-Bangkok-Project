@@ -38,30 +38,53 @@ const NetworkEnum = {
 } as const;
 
 // Network metadata
+// Network metadata
 const networks = {
-  [NetworkEnum.ETHEREUM]: { name: "Ethereum", icon: "🔷" },
-  [NetworkEnum.POLYGON]: { name: "Polygon", icon: "💜" },
-  [NetworkEnum.ZKSYNC]: { name: "zkSync", icon: "⚡" },
-  [NetworkEnum.BINANCE]: { name: "Binance", icon: "🟡" },
-  [NetworkEnum.ARBITRUM]: { name: "Arbitrum", icon: "🔵" },
-  [NetworkEnum.AVALANCHE]: { name: "Avalanche", icon: "❄️" },
-  [NetworkEnum.OPTIMISM]: { name: "Optimism", icon: "🔴" },
-  [NetworkEnum.FANTOM]: { name: "Fantom", icon: "👻" },
-  [NetworkEnum.GNOSIS]: { name: "Gnosis", icon: "🦊" },
-  [NetworkEnum.COINBASE]: { name: "Coinbase", icon: "🔵" },
-};
+  [NetworkEnum.ETHEREUM]: {
+    name: "Ethereum",
+    icon: "https://app.1inch.io/assets/images/network-logos/ethereum.svg",
+  },
+  [NetworkEnum.POLYGON]: {
+    name: "Polygon",
+    icon: "https://app.1inch.io/assets/images/network-logos/polygon_1.svg",
+  },
+  [NetworkEnum.BINANCE]: {
+    name: "BNB Chain",
+    icon: "https://app.1inch.io/assets/images/network-logos/bsc_2.svg",
+  },
+  [NetworkEnum.ARBITRUM]: {
+    name: "Arbitrum",
+    icon: "https://app.1inch.io/assets/images/network-logos/arbitrum_2.svg",
+  },
+  [NetworkEnum.AVALANCHE]: {
+    name: "Avalanche",
+    icon: "https://app.1inch.io/assets/images/network-logos/avalanche.svg",
+  },
+  [NetworkEnum.OPTIMISM]: {
+    name: "Optimism",
+    icon: "https://app.1inch.io/assets/images/network-logos/optimism.svg",
+  },
+  [NetworkEnum.GNOSIS]: {
+    name: "Gnosis",
+    icon: "https://app.1inch.io/assets/images/network-logos/gnosis.svg",
+  },
+  [NetworkEnum.COINBASE]: {
+    name: "Base",
+    icon: "https://app.1inch.io/assets/images/network-logos/base.svg",
+  },
+} as const;
 
 const tokens = {
   USDC: {
     name: "USD Coin",
     symbol: "USDC",
-    icon: "💵",
+    icon: "https://tokens-data.1inch.io/images/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png",
     decimals: 6,
   },
   USDT: {
     name: "Tether USD",
     symbol: "USDT",
-    icon: "💵",
+    icon: "https://tokens-data.1inch.io/images/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
     decimals: 6,
   },
 };
@@ -127,7 +150,12 @@ export default function SwapPage() {
                           <SelectLabel>Tokens</SelectLabel>
                           {Object.entries(tokens).map(([symbol, token]) => (
                             <SelectItem key={symbol} value={symbol}>
-                              {token.icon} {token.symbol}
+                              <img
+                                src={token.icon}
+                                alt={token.name}
+                                className="w-4 h-4 inline mr-2"
+                              />{" "}
+                              {token.symbol}
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -149,7 +177,12 @@ export default function SwapPage() {
                         <SelectLabel>Networks</SelectLabel>
                         {Object.entries(networks).map(([id, network]) => (
                           <SelectItem key={id} value={id}>
-                            {network.icon} {network.name}
+                            <img
+                              src={network.icon}
+                              alt={network.name}
+                              className="w-4 h-4 inline mr-2"
+                            />
+                            {network.name}
                           </SelectItem>
                         ))}
                       </SelectGroup>
@@ -173,7 +206,7 @@ export default function SwapPage() {
 
             <div className="space-y-2">
               <Label className="text-sm text-neutral-400">You receive</Label>
-              <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-4">
+              <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-4 text-white">
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <Input
@@ -193,7 +226,12 @@ export default function SwapPage() {
                           <SelectLabel>Tokens</SelectLabel>
                           {Object.entries(tokens).map(([symbol, token]) => (
                             <SelectItem key={symbol} value={symbol}>
-                              {token.icon} {token.symbol}
+                              <img
+                                src={token.icon}
+                                alt={token.name}
+                                className="w-4 h-4 inline mr-2"
+                              />{" "}
+                              {token.symbol}
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -215,7 +253,12 @@ export default function SwapPage() {
                         <SelectLabel>Networks</SelectLabel>
                         {Object.entries(networks).map(([id, network]) => (
                           <SelectItem key={id} value={id}>
-                            {network.icon} {network.name}
+                            <img
+                              src={network.icon}
+                              alt={network.name}
+                              className="w-4 h-4 inline mr-2"
+                            />
+                            {network.name}
                           </SelectItem>
                         ))}
                       </SelectGroup>

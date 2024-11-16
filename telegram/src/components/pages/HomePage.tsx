@@ -4,7 +4,6 @@ import Image from "next/image";
 import { Icons } from "../icons";
 import { DynamicWidget, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { useEffect, useState } from "react";
-import { useTelegramLogin } from "@dynamic-labs/sdk-react-core";
 import Spinner from "../Spinner";
 
 const HomePage = () => {

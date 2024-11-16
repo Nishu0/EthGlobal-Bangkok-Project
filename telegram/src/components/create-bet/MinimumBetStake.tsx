@@ -23,7 +23,7 @@ const MinimumBetStake: React.FC<MinimumBetStakeProps> = ({
       className="space-y-4"
     >
       <h2 className="text-lg font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-blue-400 bg-clip-text text-transparent text-center">
-        How much is the minimum bet stake?
+        What will be the bet end time ?
       </h2>
       <div className="relative">
         <Input
@@ -33,9 +33,9 @@ const MinimumBetStake: React.FC<MinimumBetStakeProps> = ({
           value={minStake}
           onChange={(e) => updateFormData("minStake", e.target.value)}
         />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+        {/* <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
           $
-        </span>
+        </span> */}
       </div>
       <Button
         className="w-full bg-blue-600 hover:bg-blue-700 text-white"

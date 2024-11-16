@@ -12,46 +12,44 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 
+// Type definitions
 interface TokenInfo {
   symbol: string;
   name: string;
+}
+
+interface Chain {
+  id: number;
+  name: string;
+  icon: string;
 }
 
 interface TokenMapping {
   [key: string]: TokenInfo;
 }
 
-interface Chain {
-  id: number;
-  name: string;
-}
+// Zod schemas
+const TokenResponseSchema = z.object({
+  chain_id: z.number(),
+  contract_address: z.string(),
+  amount: z.number(), // Changed from string to number
+  price_to_usd: z.number(), // Changed from string to number
+  value_usd: z.number(), // Changed from string to number
+  abs_profit_usd: z.number(), // Changed from string to number
+  roi: z.number(), // Changed from string to number
+  status: z.number(),
+});
 
-interface Token {
-  chainId: number;
-  address: string;
-  symbol: string;
-  name: string;
-  amount: number;
-  priceUSD: number;
-  valueUSD: number;
-  profitUSD: number;
-  roi: number;
-}
+const APIResponseSchema = z.object({
+  result: z.array(TokenResponseSchema),
+});
 
-interface APITokenResponse {
-  chain_id: number;
-  contract_address: string;
-  amount: string;
-  price_to_usd: string;
-  value_usd: string;
-  abs_profit_usd: string;
-  roi: string;
-}
-
-interface APIResponse {
-  result: APITokenResponse[];
-}
+// Types inferred from Zod schemas
+type TokenResponse = z.infer<typeof TokenResponseSchema>;
+type APIResponse = z.infer<typeof APIResponseSchema>;
 
 const TOKEN_MAPPING: TokenMapping = {
   "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
@@ -70,114 +68,97 @@ const TOKEN_MAPPING: TokenMapping = {
     symbol: "USDC",
     name: "USD Coin",
   },
-};
+} as const;
 
-const SUPPORTED_CHAINS: Chain[] = [
-  { id: 1, name: "Ethereum Mainnet" },
-  { id: 42161, name: "Arbitrum" },
-  { id: 56, name: "BNB Chain" },
-  { id: 100, name: "Gnosis" },
-  { id: 10, name: "Optimism" },
-  { id: 137, name: "Polygon" },
-  { id: 8453, name: "Base" },
-];
+const SUPPORTED_CHAINS: readonly Chain[] = [
+  {
+    id: 1,
+    name: "Ethereum",
+    icon: "https://app.1inch.io/assets/images/network-logos/ethereum.svg",
+  },
+  {
+    id: 56,
+    name: "BNB Chain",
+    icon: "https://app.1inch.io/assets/images/network-logos/bsc_2.svg",
+  },
+  {
+    id: 137,
+    name: "Polygon",
+    icon: "https://app.1inch.io/assets/images/network-logos/polygon_1.svg",
+  },
+  {
+    id: 42161,
+    name: "Arbitrum",
+    icon: "https://app.1inch.io/assets/images/network-logos/arbitrum_2.svg",
+  },
+  {
+    id: 100,
+    name: "Gnosis",
+    icon: "https://app.1inch.io/assets/images/network-logos/gnosis.svg",
+  },
+  {
+    id: 10,
+    name: "Optimism",
+    icon: "https://app.1inch.io/assets/images/network-logos/optimism.svg",
+  },
+  {
+    id: 8453,
+    name: "Base",
+    icon: "https://app.1inch.io/assets/images/network-logos/base.svg",
+  },
+  {
+    id: 43114,
+    name: "Avalanche",
+    icon: "https://app.1inch.io/assets/images/network-logos/avalanche.svg",
+  },
+] as const;
+
+// API function with explicit parameter types
+const fetchPortfolio = async (
+  address: string,
+  chainId: string
+): Promise<APIResponse> => {
+  const response: Response = await fetch(
+    `http://localhost:8000/api/getportfolio?address=${address}&chainId=${chainId}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch portfolio data");
+  }
+
+  const data: unknown = await response.json();
+  return APIResponseSchema.parse(data);
+};
 
 export default function ProfilePage(): JSX.Element {
   const { primaryWallet } = useDynamicContext();
   const [selectedChain, setSelectedChain] = useState<string>("1");
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [portfolioValue, setPortfolioValue] = useState<number>(0);
 
-  const fetchTokens = async (): Promise<void> => {
-    if (!primaryWallet?.address) return;
+  const {
+    data: portfolioData,
+    isLoading,
+    error,
+  } = useQuery<APIResponse, Error>({
+    queryKey: ["portfolio", primaryWallet?.address, selectedChain],
+    queryFn: () =>
+      primaryWallet?.address
+        ? fetchPortfolio(primaryWallet.address, selectedChain)
+        : Promise.reject(new Error("No wallet address")),
+    enabled: !!primaryWallet?.address,
+    staleTime: 30000,
+    refetchInterval: 60000,
+  });
 
-    setLoading(true);
-    try {
-      const apiKey: string | undefined =
-        process.env.NEXT_PUBLIC_ONEINCH_API_KEY;
-      if (!apiKey) {
-        throw new Error("1inch API key is not configured");
-      }
-
-      const response: Response = await fetch(
-        `https://api.1inch.dev/portfolio/portfolio/v4/overview/erc20/details?addresses=${primaryWallet.address}&chain_id=${selectedChain}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
+  useEffect((): void => {
+    if (portfolioData?.result) {
+      const totalValue: number = portfolioData.result.reduce(
+        (acc: number, token: TokenResponse): number => acc + token.value_usd,
+        0
       );
-
-      if (!response.ok) {
-        switch (response.status) {
-          case 401:
-            throw new Error(
-              "Invalid or missing API key. Please check your API key configuration."
-            );
-          case 403:
-            throw new Error(
-              "Access forbidden. Please verify your API permissions."
-            );
-          case 429:
-            throw new Error("Rate limit exceeded. Please try again later.");
-          default:
-            throw new Error(
-              `API request failed with status: ${response.status}`
-            );
-        }
-      }
-
-      const data: APIResponse = await response.json();
-
-      if (data && data.result) {
-        const formattedTokens: Token[] = data.result.map(
-          (token: APITokenResponse): Token => ({
-            chainId: token.chain_id,
-            address: token.contract_address,
-            symbol: TOKEN_MAPPING[token.contract_address]?.symbol || "Unknown",
-            name:
-              TOKEN_MAPPING[token.contract_address]?.name || "Unknown Token",
-            amount: parseFloat(token.amount),
-            priceUSD: parseFloat(token.price_to_usd),
-            valueUSD: parseFloat(token.value_usd),
-            profitUSD: parseFloat(token.abs_profit_usd),
-            roi: parseFloat(token.roi) * 100,
-          })
-        );
-
-        setTokens(formattedTokens);
-        const totalValue: number = formattedTokens.reduce(
-          (acc: number, token: Token): number => acc + token.valueUSD,
-          0
-        );
-        setPortfolioValue(totalValue);
-      }
-    } catch (error) {
-      console.error("Error fetching tokens:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch tokens. Please try again.",
-        variant: "destructive",
-      });
-      setTokens([]);
-      setPortfolioValue(0);
-    } finally {
-      setLoading(false);
+      setPortfolioValue(totalValue);
     }
-  };
-
-  useEffect(() => {
-    if (primaryWallet?.address && selectedChain) {
-      fetchTokens();
-    }
-  }, [primaryWallet?.address, selectedChain]);
+  }, [portfolioData]);
 
   const copyWalletAddress = (): void => {
     if (primaryWallet?.address) {
@@ -190,14 +171,20 @@ export default function ProfilePage(): JSX.Element {
   };
 
   const formatNumber = (
-    value: number,
-    minimumFractionDigits: number = 2,
-    maximumFractionDigits: number = 2
+    value: number | string,
+    minimumFractionDigits: number = 10,
+    maximumFractionDigits: number = 10
   ): string => {
-    return value.toLocaleString(undefined, {
+    const numValue: number =
+      typeof value === "string" ? parseFloat(value) : value;
+    return numValue.toLocaleString(undefined, {
       minimumFractionDigits,
       maximumFractionDigits,
     });
+  };
+
+  const handleChainSelect = (value: string): void => {
+    setSelectedChain(value);
   };
 
   if (!primaryWallet) {
@@ -218,9 +205,40 @@ export default function ProfilePage(): JSX.Element {
     );
   }
 
+  if (error instanceof Error) {
+    return (
+      <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center justify-center">
+        <Card className="bg-neutral-900 w-full max-w-md">
+          <CardContent className="p-6">
+            <p className="text-center text-red-500">
+              {error.message ||
+                "Error loading portfolio data. Please try again later."}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white p-6 relative">
-      <h1 className="text-2xl font-bold text-neutral-400 mb-8">Profile Page</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold text-neutral-400">Profile Page</h1>
+        <div className="w-48">
+          <Select value={selectedChain} onValueChange={handleChainSelect}>
+            <SelectTrigger className="bg-neutral-900 border-neutral-800">
+              <SelectValue placeholder="Select Chain" />
+            </SelectTrigger>
+            <SelectContent className="bg-neutral-900 border-neutral-800">
+              {SUPPORTED_CHAINS.map((chain: Chain) => (
+                <SelectItem key={chain.id} value={chain.id.toString()}>
+                  {chain.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       <div className="flex justify-center mb-12">
         <Avatar className="w-24 h-24 border-4 border-neutral-800">
@@ -230,24 +248,6 @@ export default function ProfilePage(): JSX.Element {
             className="object-cover"
           />
         </Avatar>
-      </div>
-
-      <div className="mb-6">
-        <Select
-          value={selectedChain}
-          onValueChange={(value: string) => setSelectedChain(value)}
-        >
-          <SelectTrigger className="bg-neutral-900 border-neutral-800">
-            <SelectValue placeholder="Select Chain" />
-          </SelectTrigger>
-          <SelectContent className="bg-neutral-900 border-neutral-800">
-            {SUPPORTED_CHAINS.map((chain: Chain) => (
-              <SelectItem key={chain.id} value={chain.id.toString()}>
-                {chain.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="flex justify-between mb-12">
@@ -277,37 +277,45 @@ export default function ProfilePage(): JSX.Element {
 
       <div className="mb-12">
         <h2 className="text-xl font-bold mb-4">Tokens</h2>
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center p-8">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
-        ) : tokens.length > 0 ? (
+        ) : portfolioData?.result && portfolioData.result.length > 0 ? (
           <div className="space-y-4">
-            {tokens.map((token: Token, index: number) => (
+            {portfolioData.result.map((token: TokenResponse, index: number) => (
               <div
-                key={index}
+                key={`${token.contract_address}-${index}`}
                 className="flex items-center justify-between bg-neutral-900 rounded-2xl p-4"
               >
                 <div className="flex flex-col">
                   <div className="flex items-center">
-                    <span className="text-lg font-bold">{token.symbol}</span>
+                    <span className="text-lg font-bold">
+                      {TOKEN_MAPPING[
+                        token.contract_address as keyof typeof TOKEN_MAPPING
+                      ]?.symbol || "Unknown"}
+                    </span>
                     <span className="text-sm text-neutral-400 ml-2">
-                      {token.name}
+                      {TOKEN_MAPPING[
+                        token.contract_address as keyof typeof TOKEN_MAPPING
+                      ]?.name || "Unknown Token"}
                     </span>
                   </div>
                   <span className="text-sm text-neutral-400">
-                    ROI: {formatNumber(token.roi)}%
+                    ROI: {formatNumber(token.roi * 100)}%{" "}
+                    {/* Removed parseFloat */}
                   </span>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold">
-                    {formatNumber(token.amount, 4)}
+                    {formatNumber(token.amount, 4)} {/* Removed parseFloat */}
                   </p>
                   <p className="text-sm text-neutral-400">
-                    ${formatNumber(token.valueUSD)}
+                    ${formatNumber(token.value_usd)} {/* Removed parseFloat */}
                   </p>
                   <p className="text-xs text-neutral-400">
-                    Price: ${formatNumber(token.priceUSD)}
+                    Price: ${formatNumber(token.price_to_usd)}{" "}
+                    {/* Removed parseFloat */}
                   </p>
                 </div>
               </div>

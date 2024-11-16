@@ -3,4 +3,10 @@ export type IconProps = {
   className?: string;
 };
 
-export type TabType = "home" | "bet" | "friends" | "tasks" | "create-bet";
+export type TabType =
+  | "home"
+  | "bet"
+  | "friends"
+  | "tasks"
+  | "create-bet"
+  | "profile";

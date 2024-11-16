@@ -16,10 +16,11 @@ const NavigationBar = () => {
     { id: "friends", label: "Friends", Icon: Icons.Friends },
     { id: "tasks", label: "Tasks", Icon: Icons.Tasks },
     { id: "bet", label: "Bets", Icon: Icons.Create },
+    { id: "profile", label: "Profile", Icon: Icons.Profile },
   ];
 
   return (
-    <div className="flex justify-center w-full">
+    <div className="flex justify-center w-full rounded-full">
       <div className="fixed bottom-0 bg-black border-t border-gray-800 w-full max-w-md">
         <div className="flex justify-between px-4 py-2">
           {tabs.map((tab) => {

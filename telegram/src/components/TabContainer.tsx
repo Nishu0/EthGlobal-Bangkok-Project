@@ -6,6 +6,7 @@ import BetsPage from "./pages/ViewBetPage";
 import FriendsPage from "./pages/FriendPage";
 import TasksPage from "./pages/TaskPage";
 import CreateBetPage from "./pages/CreateBetPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const TabContainer = () => {
   const { activeTab } = useTab();
@@ -26,6 +27,9 @@ const TabContainer = () => {
       </div>
       <div className={`${activeTab === "create-bet" ? "is-show" : "is-hide"}`}>
         <CreateBetPage />
+      </div>
+      <div className={`${activeTab === "profile" ? "is-show" : "is-hide"}`}>
+        <ProfilePage />
       </div>
     </div>
   );

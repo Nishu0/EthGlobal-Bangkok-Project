@@ -1,12 +1,10 @@
-"use client";
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 interface AddDescriptionProps {
-  handleSubmit: () => void;
+  onNext: () => void;
   updateFormData: (
     field: "hasDescription" | "descriptionText",
     value: boolean | string
@@ -14,7 +12,7 @@ interface AddDescriptionProps {
 }
 
 const AddDescription: React.FC<AddDescriptionProps> = ({
-  handleSubmit,
+  onNext,
   updateFormData,
 }) => {
   const [showTextarea, setShowTextarea] = useState(false);
@@ -27,12 +25,12 @@ const AddDescription: React.FC<AddDescriptionProps> = ({
 
   const handleNoClick = () => {
     updateFormData("hasDescription", false);
-    handleSubmit();
+    onNext();
   };
 
   const handleTextareaSubmit = () => {
     updateFormData("descriptionText", descriptionText);
-    handleSubmit();
+    onNext();
   };
 
   return (
@@ -77,7 +75,7 @@ const AddDescription: React.FC<AddDescriptionProps> = ({
             className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             onClick={handleTextareaSubmit}
           >
-            Submit
+            Preview
           </Button>
         </motion.div>
       )}

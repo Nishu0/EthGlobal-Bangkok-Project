@@ -7,12 +7,9 @@ import AudienceSelection from "../create-bet/AudienceSelection";
 import BettingQuestion from "../create-bet/BettingQuestion";
 import AddDescription from "../create-bet/AddDescription";
 import { Icons } from "@/components/icons";
-import {
-  usePrepareContractWrite,
-  useContractWrite,
-  useWaitForTransaction,
-} from "wagmi";
+import { useWriteContract } from "wagmi";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import ReviewPage from "../create-bet/ReviewSection";
 
 interface FormData {
   audience: string;
@@ -36,34 +33,6 @@ const CreateBetPage: React.FC = () => {
 
   const updateFormData = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch('/bets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          question: formData.description,
-          description: formData.descriptionText,
-          minStake: formData.minStake,
-          endTimestamp: new Date(formData.duration),
-          creatorAddress: primaryWallet?.address, // from wallet connection
-          txHash: // from contract interaction
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create bet');
-      }
-      
-      // Handle success (e.g., redirect to bets page)
-    } catch (error) {
-      // Handle error
-      console.error('Error creating bet:', error);
-    }
   };
 
   const goBack = () => {
@@ -90,10 +59,12 @@ const CreateBetPage: React.FC = () => {
       case 3:
         return (
           <AddDescription
-            handleSubmit={handleSubmit}
+            onNext={() => setStep(4)}
             updateFormData={updateFormData}
           />
         );
+      case 4:
+        return <ReviewPage formData={formData} />;
       default:
         return null;
     }

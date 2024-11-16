@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DynamicWidget, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, ChevronDownIcon, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -41,6 +41,8 @@ const TokenResponseSchema = z.object({
   abs_profit_usd: z.number(), // Changed from string to number
   roi: z.number(), // Changed from string to number
   status: z.number(),
+  symbol: z.string(),
+  name: z.string(),
 });
 
 const APIResponseSchema = z.object({
@@ -223,16 +225,31 @@ export default function ProfilePage(): JSX.Element {
   return (
     <div className="min-h-screen bg-black text-white p-6 relative">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-neutral-400">Profile Page</h1>
+        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+          Profile Page
+        </h1>
         <div className="w-48">
           <Select value={selectedChain} onValueChange={handleChainSelect}>
-            <SelectTrigger className="bg-neutral-900 border-neutral-800">
-              <SelectValue placeholder="Select Chain" />
+            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+              <div className="flex items-center">
+                <SelectValue />
+              </div>
             </SelectTrigger>
-            <SelectContent className="bg-neutral-900 border-neutral-800">
+            <SelectContent className="bg-gray-800 border-gray-700">
               {SUPPORTED_CHAINS.map((chain: Chain) => (
-                <SelectItem key={chain.id} value={chain.id.toString()}>
-                  {chain.name}
+                <SelectItem
+                  key={chain.id}
+                  value={chain.id.toString()}
+                  className="text-white hover:bg-gray-700"
+                >
+                  <div className="flex items-center">
+                    <img
+                      src={chain.icon}
+                      alt={chain.name}
+                      className="w-5 h-5 mr-2"
+                    />
+                    <span>{chain.name}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -291,14 +308,10 @@ export default function ProfilePage(): JSX.Element {
                 <div className="flex flex-col">
                   <div className="flex items-center">
                     <span className="text-lg font-bold">
-                      {TOKEN_MAPPING[
-                        token.contract_address as keyof typeof TOKEN_MAPPING
-                      ]?.symbol || "Unknown"}
+                      <span>{token.symbol}</span>
                     </span>
                     <span className="text-sm text-neutral-400 ml-2">
-                      {TOKEN_MAPPING[
-                        token.contract_address as keyof typeof TOKEN_MAPPING
-                      ]?.name || "Unknown Token"}
+                      <span>{token.name}</span>
                     </span>
                   </div>
                   <span className="text-sm text-neutral-400">

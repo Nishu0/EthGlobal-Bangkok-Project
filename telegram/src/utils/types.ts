@@ -9,4 +9,5 @@ export type TabType =
   | "friends"
   | "tasks"
   | "create-bet"
-  | "profile";
+  | "profile"
+  | "swap";

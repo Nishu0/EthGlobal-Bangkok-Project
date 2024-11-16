@@ -17,6 +17,7 @@ const NavigationBar = () => {
     { id: "tasks", label: "Tasks", Icon: Icons.Tasks },
     { id: "bet", label: "Bets", Icon: Icons.Create },
     { id: "profile", label: "Profile", Icon: Icons.Profile },
+    { id: "swap", label: "Swap", Icon: Icons.Profile },
   ];
 
   return (

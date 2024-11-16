@@ -7,6 +7,7 @@ import FriendsPage from "./pages/FriendPage";
 import TasksPage from "./pages/TaskPage";
 import CreateBetPage from "./pages/CreateBetPage";
 import ProfilePage from "./pages/ProfilePage";
+import SwapPage from "./pages/SwapPage";
 
 const TabContainer = () => {
   const { activeTab } = useTab();
@@ -30,6 +31,9 @@ const TabContainer = () => {
       </div>
       <div className={`${activeTab === "profile" ? "is-show" : "is-hide"}`}>
         <ProfilePage />
+      </div>
+      <div className={`${activeTab === "swap" ? "is-show" : "is-hide"}`}>
+        <SwapPage />
       </div>
     </div>
   );

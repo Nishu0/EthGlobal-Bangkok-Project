@@ -3,7 +3,7 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 interface Router {
-    function fetchOutcome(bytes calldata data) external returns(bool);
+    function fetchOutcome(uint256 data) external returns(bool);
 }
 
 contract Polymarket {
@@ -34,7 +34,7 @@ contract Polymarket {
 
     struct Questions {
         uint256 id;
-        string question;
+        uint256 question;
         uint256 timestamp;
         uint256 endTimestamp;
         address createdBy;
@@ -60,7 +60,7 @@ contract Polymarket {
 
     event QuestionCreated(
         uint256 id,
-        string question,
+        uint256 question,
         uint256 timestamp,
         address createdBy,
         uint256 totalAmount,
@@ -69,8 +69,7 @@ contract Polymarket {
     );
 
     function createQuestion(
-        string memory _question,
-        string memory _description,
+        uint256 _question,
         uint256 duration
     ) public {
         require(msg.sender == owner, "Unauthorized");
@@ -86,7 +85,7 @@ contract Polymarket {
         question.totalAmount = 0;
         question.totalYesAmount = 0;
         question.totalNoAmount = 0;
-        question.description = _description;
+        question.description = "Is price above than?";
         question.endTimestamp = block.timestamp + duration;
 
         emit QuestionCreated(
@@ -137,7 +136,7 @@ contract Polymarket {
         return (question.yesCount, question.noCount);
     }
 
-    function fetchOutcome(bytes memory data, uint256 id) public returns(bool outcome){
+    function fetchOutcome(uint256 data, uint256 id) internal returns(bool outcome){
         require(msg.sender == owner);
         outcome = router.fetchOutcome(data);
         outcomes[id] = outcome;
@@ -147,7 +146,7 @@ contract Polymarket {
         public
         payable
     {
-        bool eventOutcome = fetchOutcome(abi.encode(_questionId), _questionId);
+        bool eventOutcome = fetchOutcome(questions[_questionId].question, _questionId);
         require(block.timestamp > questions[_questionId].endTimestamp);
         require(msg.sender == owner, "Unauthorized");
                 Questions storage question = questions[_questionId];

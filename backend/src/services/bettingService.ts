@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 
 export class BettingService {
   async createBet(data: {
-    questionId: number;
     question: string;
     description?: string;
     minStake: number;
@@ -22,7 +21,6 @@ export class BettingService {
 
     return prisma.bet.create({
       data: {
-        questionId: data.questionId,
         question: data.question,
         description: data.description,
         minStake: data.minStake,

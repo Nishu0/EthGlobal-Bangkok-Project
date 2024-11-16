@@ -8,19 +8,12 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <DynamicContextProvider
-      settings={{
-        environmentId: "21f77e40-0851-43bc-a534-ff0fa86511c3",
-        walletConnectors: [EthereumWalletConnectors],
-      }}
-    >
-      <TabProvider>
-        <main className="min-h-screen bg-black text-white">
-          {/* <CheckFootprint /> */}
-          <TabContainer />
-          <NavigationBar />
-        </main>
-      </TabProvider>
-    </DynamicContextProvider>
+    <TabProvider>
+      <main className="min-h-screen bg-black text-white">
+        {/* <CheckFootprint /> */}
+        <TabContainer />
+        <NavigationBar />
+      </main>
+    </TabProvider>
   );
 }

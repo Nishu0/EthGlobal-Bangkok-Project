@@ -9,7 +9,6 @@ export class BettingController {
   async createBet(req: Request, res: Response) {
     try {
       const {
-        questionId,
         question,
         description,
         minStake,
@@ -19,7 +18,6 @@ export class BettingController {
       } = req.body;
 
       const bet = await bettingService.createBet({
-        questionId,
         question,
         description,
         minStake,

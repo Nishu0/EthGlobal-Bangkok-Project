@@ -9,6 +9,8 @@ import { marketAbi } from "../../../abis/market";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTab } from "@/contexts/TabContext";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 interface ReviewPageProps {
   formData: {
@@ -24,18 +26,21 @@ interface ReviewPageProps {
 const ReviewPage: React.FC<ReviewPageProps> = ({ formData }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { activeTab, setActiveTab } = useTab();
+  const { primaryWallet } = useDynamicContext();
 
   const { writeContractAsync } = useWriteContract();
 
   // Create bet mutation
   const createBetMutation = useMutation({
     mutationFn: async ({ txHash }: { txHash: `0x${string}` }) => {
-      const response = await fetch("/api/bets", {
+      const response = await fetch("http://localhost:8000/api/bets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          creatorAddress: primaryWallet?.address,
           question: formData.description,
           description: formData.descriptionText,
           minStake: formData.minStake,
@@ -43,7 +48,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ formData }) => {
           txHash,
         }),
       });
-
+      console.log("response", response);
       if (!response.ok) {
         throw new Error("Failed to create bet");
       }
@@ -53,7 +58,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ formData }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bets"] });
       toast.success("Bet created successfully!");
-      router.push("/bets");
+      setActiveTab("create-bet");
     },
     onError: (error) => {
       console.error("Error creating bet:", error);
@@ -64,11 +69,13 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ formData }) => {
   const handleCreateBet = async () => {
     try {
       // Convert description to bytes32 by hashing it
-      const minStake = formData.minStake;
+      const minStake = 100;
 
       // Calculate end timestamp in seconds
-      const endTimestamp = Math.floor(Date.now() / 1000) + formData.duration;
-
+      console.log("Date.now()", Date.now());
+      const endTimestamp = Math.floor(1735689600 - Date.now() / 1000);
+      console.log("minStake", minStake);
+      console.log("endTimestamp", endTimestamp);
       // Write to contract
       const result = await writeContractAsync({
         address: process.env

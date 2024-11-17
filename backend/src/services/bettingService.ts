@@ -25,10 +25,11 @@ export class BettingService {
         description: data.description,
         minStake: data.minStake,
         endTimestamp: data.endTimestamp,
-        status: BetStatus.OPEN,
+        status: BetStatus.ONGOING,
         totalAmount: 0,
         totalYesAmount: 0,
         totalNoAmount: 0,
+        eventCompleted: false,
         creator: { connect: { id: user.id } },
         txHash: data.txHash,
       },
@@ -52,8 +53,12 @@ export class BettingService {
       throw new Error("Bet not found");
     }
 
-    if (bet.status !== BetStatus.OPEN) {
+    if (bet.status !== BetStatus.ONGOING) {
       throw new Error("Bet is not open for positions");
+    }
+
+    if (bet.eventCompleted) {
+      throw new Error("Event has already completed");
     }
 
     // Create bet position in a transaction
@@ -65,6 +70,7 @@ export class BettingService {
           amount: data.amount,
           position: data.position,
           txHash: data.txHash,
+          claimed: false,
         },
       });
 
@@ -116,6 +122,29 @@ export class BettingService {
       },
       orderBy: {
         createdAt: "desc",
+      },
+    });
+  }
+
+  // Add method to complete event
+  async completeBet(betId: string) {
+    const bet = await prisma.bet.findUnique({
+      where: { id: betId },
+    });
+
+    if (!bet) {
+      throw new Error("Bet not found");
+    }
+
+    if (bet.status !== BetStatus.ONGOING) {
+      throw new Error("Bet is not ongoing");
+    }
+
+    return prisma.bet.update({
+      where: { id: betId },
+      data: {
+        status: BetStatus.COMPLETED,
+        eventCompleted: true,
       },
     });
   }

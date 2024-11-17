@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@1inch/cross-chain-sdk": "^0.1.10",
     "@dynamic-labs/ethereum": "^3.6.3",
     "@dynamic-labs/sdk-react-core": "^3.6.3",
     "@dynamic-labs/wagmi-connector": "^3.6.3",
@@ -37,6 +38,7 @@
     "telegraf": "^4.16.3",
     "viem": "^2.21.45",
     "wagmi": "^2.12.33",
+    "web3": "^4.15.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

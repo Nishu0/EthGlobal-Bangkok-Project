@@ -141,26 +141,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ formData }) => {
                 </p>
               </div>
             )}
-
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-gray-400">
-                  Minimum Stake
-                </h3>
-                <p className="text-lg text-white flex items-center gap-2">
-                  <Icons.Wallet className="w-5 h-5 text-green-400" />
-                  {formData.minStake.toLocaleString()} USDC
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-gray-400">Duration</h3>
-                <p className="text-lg text-white flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-yellow-400" />
-                  {Math.ceil(formData.duration / (24 * 60 * 60))} days
-                </p>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>

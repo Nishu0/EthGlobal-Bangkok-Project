@@ -1,9 +1,7 @@
-// types/betting.ts
-
 export enum BetStatus {
-  OPEN = "OPEN",
-  CLOSED = "CLOSED",
-  RESOLVED = "RESOLVED",
+  ONGOING = "ONGOING",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
 }
 
 export enum Position {
@@ -15,17 +13,20 @@ export type TimeFilter = "all" | "1d" | "1w" | "1m" | "1y";
 
 export interface Bet {
   id: string;
+  questionId: number;
   question: string;
   description?: string;
   minStake: number;
   endTimestamp: Date;
-  creatorAddress: string;
+  creatorId: string;
   txHash: string;
   status: BetStatus;
   totalAmount: number;
   totalYesAmount: number;
   totalNoAmount: number;
+  eventCompleted: boolean;
   createdAt: Date;
+  updatedAt: Date;
   creator: User;
   positions: BetPosition[];
 }
@@ -33,6 +34,8 @@ export interface Bet {
 export interface User {
   id: string;
   address: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface BetPosition {
@@ -42,6 +45,9 @@ export interface BetPosition {
   amount: number;
   position: Position;
   txHash: string;
+  claimed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   user: User;
 }
 

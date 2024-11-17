@@ -1,49 +1,18 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useTab } from "@/contexts/TabContext";
-import BetsList from "../BetsList";
 import BetsFilter from "../BetsFilter";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-
-type TimeFilterKey = "All" | "1D" | "1W" | "1M" | "1Y";
-
-enum BetStatus {
-  OPEN = "OPEN",
-  CLOSED = "CLOSED",
-  RESOLVED = "RESOLVED",
-}
-
-type Bet = {
-  id: number;
-  question: string;
-  description?: string;
-  minStake: number;
-  endTimestamp: string;
-  creatorAddress: string;
-  txHash: string;
-  status: BetStatus;
-  yesAmount?: number;
-  noAmount?: number;
-  betAmount?: number;
-  maxPayout?: number;
-  timeLeft?: {
-    days: number;
-    hours: number;
-    minutes: number;
-  };
-};
-
-type PlaceBetParams = {
-  betId: number;
-  position: "YES" | "NO"; // Changed to match Prisma enum
-  amount: number;
-  userAddress: string;
-  txHash: string;
-};
+import {
+  Bet,
+  BetStatus,
+  PlaceBetParams,
+  Position,
+  TimeFilterKey,
+} from "@/utils/types";
 
 const BetsPage = () => {
   const queryClient = useQueryClient();
@@ -54,12 +23,16 @@ const BetsPage = () => {
 
   // Convert UI status to API status
   const getApiStatus = (tab: string): BetStatus => {
-    return tab === "ongoing" ? BetStatus.OPEN : BetStatus.CLOSED;
-  };
-
-  // Format time filter for API
-  const formatTimeFilter = (filter: TimeFilterKey): string => {
-    return filter.toLowerCase();
+    switch (tab) {
+      case "ongoing":
+        return BetStatus.ONGOING;
+      case "completed":
+        return BetStatus.COMPLETED;
+      case "cancelled":
+        return BetStatus.CANCELLED;
+      default:
+        return BetStatus.ONGOING;
+    }
   };
 
   // Fetch bets query
@@ -71,7 +44,7 @@ const BetsPage = () => {
     queryKey: ["bets", selectedTimeFilter, currentTab],
     queryFn: async () => {
       const params = new URLSearchParams({
-        timeFilter: formatTimeFilter(selectedTimeFilter),
+        timeFilter: selectedTimeFilter,
         status: getApiStatus(currentTab),
       });
 
@@ -85,7 +58,7 @@ const BetsPage = () => {
       return response.json();
     },
     retry: 1,
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    staleTime: 30000,
   });
 
   // Place bet mutation
@@ -131,8 +104,8 @@ const BetsPage = () => {
   });
 
   const handlePlaceBet = (
-    betId: number,
-    position: "YES" | "NO",
+    betId: string,
+    position: Position,
     amount: number
   ) => {
     placeBetMutation.mutate({
@@ -145,10 +118,10 @@ const BetsPage = () => {
   };
 
   const renderBetButtons = (bet: Bet) => {
-    if (bet.status === BetStatus.CLOSED) {
+    if (bet.status !== BetStatus.ONGOING || bet.eventCompleted) {
       return (
         <Button className="bg-gray-600 cursor-not-allowed" disabled>
-          Betting Closed
+          Betting {bet.eventCompleted ? "Completed" : "Closed"}
         </Button>
       );
     }
@@ -159,23 +132,25 @@ const BetsPage = () => {
       <div className="flex gap-2">
         <Button
           className="bg-green-600 hover:bg-green-700"
-          onClick={() => handlePlaceBet(bet.id, "YES", bet.minStake)}
+          onClick={() => handlePlaceBet(bet.id, Position.YES, bet.minStake)}
           disabled={isPlacingBet}
         >
           {isPlacingBet ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : null}
-          Yes
+          Yes (
+          {((bet.totalYesAmount / (bet.totalAmount || 1)) * 100).toFixed(1)}%)
         </Button>
         <Button
           className="bg-red-600 hover:bg-red-700"
-          onClick={() => handlePlaceBet(bet.id, "NO", bet.minStake)}
+          onClick={() => handlePlaceBet(bet.id, Position.NO, bet.minStake)}
           disabled={isPlacingBet}
         >
           {isPlacingBet ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : null}
-          No
+          No ({((bet.totalNoAmount / (bet.totalAmount || 1)) * 100).toFixed(1)}
+          %)
         </Button>
       </div>
     );
@@ -223,19 +198,38 @@ const BetsPage = () => {
       ) : (
         <div className="space-y-4">
           {bets.map((bet: Bet) => (
-            <div key={bet.id} className="bg-gray-800 p-4 rounded-lg">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold">{bet.question}</h3>
-                  <p className="text-gray-400">{bet.description}</p>
-                  <p className="text-sm text-gray-400">
-                    Min Stake: {bet.minStake} FLOW
+            <div key={bet.id} className="bg-gray-800 p-6 rounded-lg">
+              <div className="mb-6 text-center">
+                <h3 className="text-2xl font-bold mb-2">{bet.question}</h3>
+                {bet.description && (
+                  <p className="text-gray-400 text-lg">{bet.description}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-400">Total Pool</p>
+                  <p className="text-xl font-semibold">
+                    {bet.totalAmount} FLOW
                   </p>
                 </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-400">Status</p>
+                  <p className="text-xl font-semibold">
+                    {bet.status} {bet.eventCompleted ? "(Completed)" : ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-center gap-4 mb-4">
                 {renderBetButtons(bet)}
               </div>
-              <div className="text-sm text-gray-400">
-                Transaction: {bet.txHash.slice(0, 10)}...
+
+              <div className="text-sm text-gray-400 text-center">
+                Created by: {bet.creator.address.slice(0, 6)}...
+                {bet.creator.address.slice(-4)}
+                <span className="mx-2">•</span>
+                Tx: {bet.txHash.slice(0, 10)}...
               </div>
             </div>
           ))}

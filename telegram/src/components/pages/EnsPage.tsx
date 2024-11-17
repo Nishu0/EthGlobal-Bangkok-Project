@@ -49,21 +49,21 @@ export default function ENSPage() {
     { id: "linea", name: "Linea", icon: "https://durin.dev/linea.svg" },
   ];
 
-  useEffect(() => {
-    const fetchDomains = async () => {
-      try {
-        const response = await fetch(
-          `https://durin.dev/api/get-domains?address=0x8cB4C5336db41B4701A001574749A043Fa2fCB7A&network=${network}`
-        );
-        const data = await response.json();
-        setDomains(data);
-      } catch (error) {
-        console.error("Error fetching domains:", error);
-      }
-    };
+  //   useEffect(() => {
+  //     const fetchDomains = async () => {
+  //       try {
+  //         const response = await fetch(
+  //           `https://durin.dev/api/get-domains?address=0x8cB4C5336db41B4701A001574749A043Fa2fCB7A&network=${network}`
+  //         );
+  //         const data = await response.json();
+  //         setDomains(data);
+  //       } catch (error) {
+  //         console.error("Error fetching domains:", error);
+  //       }
+  //     };
 
-    fetchDomains();
-  }, [network]);
+  //     fetchDomains();
+  //   }, [network]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">

@@ -4,7 +4,6 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Check, ChevronDownIcon, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { useAccount, useEnsAddress, useEnsAvatar, useEnsName } from "wagmi";
 import {
   Select,
   SelectContent,

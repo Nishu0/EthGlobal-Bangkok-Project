@@ -3,6 +3,9 @@
     "Polymarket": {
       "address": "0xa38aAe035168B06d1cD0a8AE4b9d37f669494b59",
       "startBlock": 7091915
+    },
+    "poly": {
+      "address": "0x96D7cF7221c49074efa51A4a02e3ac82Bb3ddaae"
     }
   }
 }

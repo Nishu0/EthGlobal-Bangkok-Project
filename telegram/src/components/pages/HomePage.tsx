@@ -16,18 +16,15 @@ const HomePage = () => {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async (address: string) => {
-      const response = await fetch(
-        "http://localhost:8000/api/users/connect-wallet",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            address,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:8000/api/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create user");

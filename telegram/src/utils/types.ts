@@ -10,4 +10,5 @@ export type TabType =
   | "tasks"
   | "create-bet"
   | "profile"
-  | "swap";
+  | "swap"
+  | "ens";

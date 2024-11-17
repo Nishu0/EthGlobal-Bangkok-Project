@@ -1,0 +1,26 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Polymarket
+    network: sepolia
+    source:
+      address: "0xa38aAe035168B06d1cD0a8AE4b9d37f669494b59"
+      abi: Polymarket
+      startBlock: 7091915
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - QuestionCreated
+      abis:
+        - name: Polymarket
+          file: ./abis/Polymarket.json
+      eventHandlers:
+        - event: QuestionCreated(uint256,string,uint256,address,string,uint256,uint256,uint256)
+          handler: handleQuestionCreated
+      file: ./src/polymarket.ts

@@ -1,0 +1,8 @@
+{
+  "sepolia": {
+    "Polymarket": {
+      "address": "0xa38aAe035168B06d1cD0a8AE4b9d37f669494b59",
+      "startBlock": 7091915
+    }
+  }
+}

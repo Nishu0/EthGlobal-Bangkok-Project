@@ -1,0 +1,14 @@
+type QuestionCreated @entity(immutable: true) {
+  id: Bytes!
+  Polymarket_id: BigInt! # uint256
+  question: String! # string
+  timestamp: BigInt! # uint256
+  createdBy: Bytes! # address
+  creatorImageHash: String! # string
+  totalAmount: BigInt! # uint256
+  totalYesAmount: BigInt! # uint256
+  totalNoAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
